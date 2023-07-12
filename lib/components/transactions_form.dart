@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 
 class TransactionForm extends StatelessWidget {
-  final titleControler = TextEditingController();
-  final valueControler = TextEditingController();
-  TransactionForm({super.key});
+  final titleController = TextEditingController();
+  final valueController = TextEditingController();
+
+  final void Function(String, double) onSubmit;
+
+  TransactionForm(this.onSubmit, {Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -12,23 +15,37 @@ class TransactionForm extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Column(
-          children: <Widget>[
+          children: [
             TextField(
-              controller: titleControler,
+              controller: titleController,
               decoration: const InputDecoration(
-                labelText: ('Titulo'),
+                labelText: 'Título',
               ),
             ),
             TextField(
               keyboardType: TextInputType.number,
-              controller: valueControler,
+              controller: valueController,
               decoration: const InputDecoration(
-                labelText: ('Valor R\$'),
+                labelText: 'Valor (R\$)',
               ),
             ),
-            TextButton(
-              onPressed: () {},
-              child: const Text('Nova Transação'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: <Widget>[
+                TextButton(
+                  child: const Text(
+                    'Nova Transação',
+                    style: TextStyle(
+                      color: Colors.purple,
+                    ),
+                  ),
+                  onPressed: () {
+                    final title = titleController.text;
+                    final value = double.tryParse(valueController.text) ?? 0;
+                    onSubmit(title, value);
+                  },
+                )
+              ],
             ),
           ],
         ),
