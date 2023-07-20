@@ -1,22 +1,21 @@
-import 'package:despesas_pessoais/components/chart.dart';
 import 'package:despesas_pessoais/components/transactions_form.dart';
 import 'package:despesas_pessoais/models/transaction_list.dart';
+
 import 'package:flutter/material.dart';
 import 'dart:math';
 
-import './components/transaction_list.dart';
+import 'components/transaction_list.dart';
+import 'components/chart.dart';
 
-main() => runApp(const ExpensesApp());
+main() => runApp(ExpensesApp());
 
 class ExpensesApp extends StatelessWidget {
-  const ExpensesApp({super.key});
+  ExpensesApp({Key? key}) : super(key: key);
+  final ThemeData tema = ThemeData();
 
   @override
   Widget build(BuildContext context) {
-    final ThemeData tema = ThemeData();
-
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       home: const MyHomePage(),
       theme: tema.copyWith(
         colorScheme: tema.colorScheme.copyWith(
@@ -26,14 +25,18 @@ class ExpensesApp extends StatelessWidget {
         textTheme: tema.textTheme.copyWith(
           titleLarge: const TextStyle(
             fontFamily: 'OpenSans',
-            fontSize: 15,
+            fontSize: 18,
             fontWeight: FontWeight.bold,
             color: Colors.black,
+          ),
+          labelLarge: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
           ),
         ),
         appBarTheme: const AppBarTheme(
           titleTextStyle: TextStyle(
-            fontFamily: 'Quicksand',
+            fontFamily: 'OpenSans',
             fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
@@ -44,15 +47,15 @@ class ExpensesApp extends StatelessWidget {
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key});
+  const MyHomePage({Key? key}) : super(key: key);
 
   @override
-  // ignore: library_private_types_in_public_api
-  _MyHomePageState createState() => _MyHomePageState();
+  State<MyHomePage> createState() => _MyHomePageState();
 }
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _transactions = [];
+  bool _showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _transactions.where((tr) {
@@ -94,41 +97,48 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    bool isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+
     final appBar = AppBar(
       title: const Text('Despesas Pessoais'),
       actions: [
+        if (isLandscape)
+          IconButton(
+            icon: Icon(_showChart ? Icons.list : Icons.show_chart),
+            onPressed: () {
+              setState(() {
+                _showChart = !_showChart;
+              });
+            },
+          ),
         IconButton(
           icon: const Icon(Icons.add),
           onPressed: () => _openTransactionFormModal(context),
         ),
       ],
     );
-    final avaibleHeight = MediaQuery.of(context).size.height -
+
+    final availableHeight = MediaQuery.of(context).size.height -
         appBar.preferredSize.height -
         MediaQuery.of(context).padding.top;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Despesas Pessoais'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () => _openTransactionFormModal(context),
-          ),
-        ],
-      ),
+      appBar: appBar,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SizedBox(
-              height: avaibleHeight * 0.3,
-              child: Chart(_recentTransactions),
-            ),
-            SizedBox(
-              height: avaibleHeight * 0.7,
-              child: TransactionList(_transactions, _removeTransaction),
-            ),
+            if (_showChart || !isLandscape)
+              SizedBox(
+                height: availableHeight * (isLandscape ? 0.7 : 0.3),
+                child: Chart(_recentTransactions),
+              ),
+            if (!_showChart || !isLandscape)
+              SizedBox(
+                height: availableHeight * 0.7,
+                child: TransactionList(_transactions, _removeTransaction),
+              ),
           ],
         ),
       ),
